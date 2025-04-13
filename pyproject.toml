@@ -4,12 +4,13 @@ version = "0.1.0"
 description = "TSDiff: An Unconditional Diffusion Model for Time Series"
 authors = []
 dependencies = [
-    "torch~=2.1.2",
-    "pytorch-lightning~=1.9.4",
-    "gluonts[mxnet,pro]~=0.12.3",
+    "torch",
+    "torchvision",
+    "pytorch-lightning",
+    "gluonts[mxnet,pro]<0.15",
     "matplotlib",
     "seaborn",
-    "opt_einsum~=3.3.0",
+    "opt_einsum",
     "einops",
     "black",
     "tqdm",
@@ -18,7 +19,7 @@ dependencies = [
     "numba",
     "jupyter",
     "rich",
-    "pykeops==2.1.1",
+    "pykeops",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
