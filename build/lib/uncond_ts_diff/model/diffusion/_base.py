@@ -93,6 +93,7 @@ class TSDiffBase(pl.LightningModule):
         self.losses_running_mean = torch.ones(timesteps, requires_grad=False)
         self.lr = lr
         self.best_crps = np.inf
+        self.outputs = []
 
     def _extract_features(self, data):
         raise NotImplementedError()
@@ -306,16 +307,20 @@ class TSDiffBase(pl.LightningModule):
             0, self.timesteps, (x.shape[0],), device=device
         ).long()
         elbo_loss, xt, noise = self.p_losses(x, t, features, loss_type="l2")
-        return {
+        outputs = {
             "loss": elbo_loss,
             "elbo_loss": elbo_loss,
         }
+        self.outputs.append(outputs)
+        return outputs
 
-    def on_train_epoch_end(self, outputs):
+    def on_train_epoch_end(self):
+        outputs = self.outputs
         epoch_loss = sum(x["loss"] for x in outputs) / len(outputs)
         elbo_loss = sum(x["elbo_loss"] for x in outputs) / len(outputs)
         self.log("train_loss", epoch_loss)
         self.log("train_elbo_loss", elbo_loss)
+        self.outputs.clear()
 
     def validation_step(self, data, idx):
         device = next(self.backbone.parameters()).device
@@ -327,13 +332,17 @@ class TSDiffBase(pl.LightningModule):
             0, self.timesteps, (x.shape[0],), device=device
         ).long()
         elbo_loss, xt, noise = self.p_losses(x, t, features, loss_type="l2")
-        return {
+        outputs = {
             "loss": elbo_loss,
             "elbo_loss": elbo_loss,
         }
+        self.outputs.append(outputs)
+        return outputs
 
-    def on_validation_epoch_end(self, outputs):
+    def on_validation_epoch_end(self):
+        outputs = self.outputs
         epoch_loss = sum(x["loss"] for x in outputs) / len(outputs)
         elbo_loss = sum(x["elbo_loss"] for x in outputs) / len(outputs)
         self.log("valid_loss", epoch_loss)
         self.log("valid_elbo_loss", elbo_loss)
+        self.outputs.clear()
